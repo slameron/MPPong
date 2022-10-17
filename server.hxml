@@ -1,0 +1,5 @@
+-lib mphx
+--class-path source/
+--main server.Server
+--cpp server/bin
+--verbose
