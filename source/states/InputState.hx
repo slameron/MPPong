@@ -39,6 +39,13 @@ class InputState extends FlxState
 	{
 		super.update(elapsed);
 
+		if (FlxG.keys.pressed.CONTROL && FlxG.keys.justPressed.V)
+		{
+			if (lime.system.Clipboard.text != null)
+				inputText.text = lime.system.Clipboard.text;
+			return;
+		}
+
 		if (FlxG.keys.justPressed.BACKSPACE)
 			inputText.text = inputText.text.substring(0, inputText.text.length - 1);
 		else if (FlxG.keys.justPressed.ENTER)
@@ -70,8 +77,10 @@ class InputState extends FlxState
 		var num = char.toLowerCase();
 		if (numbers.exists(num))
 			return numbers.get(num);
+		else if (FlxG.keys.pressed.SHIFT)
+			return char.toUpperCase();
 		else
-			return char;
+			return char.toLowerCase();
 	}
 
 	var numbers:Map<String, String> = [

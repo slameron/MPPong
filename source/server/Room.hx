@@ -63,7 +63,7 @@ class Room extends mphx.server.room.Room
 
 	public function update(elapsed:Float)
 	{
-		if ((ticks++) % 4 == 0) // don't broadcast every frame, clients would end up getting a queue of packets to handle (LAG!!!!!)
+		if ((ticks++) % 1 == 0) // don't broadcast every frame, clients would end up getting a queue of packets to handle (LAG!!!!!)
 		{
 			var positions:Array<PaddleData> = [for (i in paddles) i];
 			var data = {positions: positions};

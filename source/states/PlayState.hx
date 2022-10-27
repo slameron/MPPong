@@ -117,9 +117,13 @@ class PlayState extends FlxState
 			new FlxTimer().start(3, tmr -> FlxG.switchState(new InputState()));
 		};
 
-		client.events.on('opponentJoined', data ->
+		client.events.on('clientDisconnect', data ->
 		{
-			trace('got movement update');
+			if (!statusText.alive)
+				statusText.revive();
+			statusText.text = 'A client in this room disconnected.\nReturning to menu...';
+
+			new FlxTimer().start(3, tmr -> FlxG.switchState(new InputState()));
 		});
 
 		client.events.on('movementUpdate', data ->
@@ -132,7 +136,7 @@ class PlayState extends FlxState
 					continue;
 
 				opponentPaddle.y = positionData.y;
-				opponentPaddle.velocity.y = positionData.vy;
+				// opponentPaddle.velocity.y = positionData.vy;
 			}
 		});
 
@@ -203,8 +207,8 @@ class PlayState extends FlxState
 		if (client.isReady)
 		{
 			client.update();
-			if ((tick++) % 4 == 0)
-				client.send('movementUpdate', {y: myPaddle.y, vy: myPaddle.velocity.y});
+			if ((tick++) % 1 == 0)
+				client.send('movementUpdate', {y: myPaddle.y /*, vy: myPaddle.velocity.y*/});
 		}
 	}
 
@@ -219,7 +223,7 @@ class PlayState extends FlxState
 				client.send('score', client.id);
 
 			// Remove the ball
-			ball.kill();
+			balls.remove(ball, true).destroy();
 		}
 	}
 
@@ -238,5 +242,11 @@ class PlayState extends FlxState
 			id += characters.charAt(FlxG.random.int(0, characters.length - 1));
 
 		return (id);
+	}
+
+	override function onFocusLost()
+	{
+		// client.close();
+		// FlxG.switchState(new InputState());
 	}
 }

@@ -40,7 +40,10 @@ class Server
 			trace("A client disconnected from the game. " + reason);
 
 			if (connection.room != null)
+			{
+				connection.room.broadcast('clientDisconnect');
 				connection.room.onLeave(connection);
+			}
 
 			connections.remove(connection);
 		}
@@ -99,7 +102,7 @@ class Server
 		{
 			var clientData = cast(client.room, Room).paddles.get(client);
 			clientData.y = data.y;
-			clientData.vy = data.vy;
+			// clientData.vy = data.vy;
 			cast(client.room, Room).newData.set(client, clientData);
 		});
 
@@ -142,16 +145,26 @@ class Server
 		{
 			Sys.println('Enter the IP address to host on. Leave empty for localhost.');
 			var ip = Sys.stdin().readLine();
+			var port:Int = -99;
 			if (ip.length <= 1)
 				ip = '127.0.0.1';
-			Sys.println('Enter the port to host on. Leave empty for 8000.');
-			var tmpPort = Sys.stdin().readLine();
-			var port:Int = 0;
-			if (tmpPort.length <= 1)
-				port = 8000;
-			else
-				port = Std.parseInt(tmpPort);
 
+			if (StringTools.contains(ip, ':'))
+			{
+				var split = ip.split(':');
+				ip = split[0];
+				port = Std.parseInt(split[1]);
+			}
+			if (port == 99)
+			{
+				Sys.println('Enter the port to host on. Leave empty for 8000.');
+				var tmpPort = Sys.stdin().readLine();
+
+				if (tmpPort.length <= 1)
+					port = 8000;
+				else
+					port = Std.parseInt(tmpPort);
+			}
 			new Server(ip, port);
 		}
 		catch (e)

@@ -29,6 +29,8 @@ class Ball extends FlxSprite
 
 		// Center it on the screen
 		screenCenter();
+
+		elasticity = 1;
 	}
 
 	/**Resets the ball
