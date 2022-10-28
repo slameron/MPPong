@@ -155,7 +155,7 @@ class Server
 				ip = split[0];
 				port = Std.parseInt(split[1]);
 			}
-			if (port == 99)
+			if (port == -99)
 			{
 				Sys.println('Enter the port to host on. Leave empty for 8000.');
 				var tmpPort = Sys.stdin().readLine();
