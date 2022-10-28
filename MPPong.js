@@ -913,7 +913,7 @@ ApplicationMain.main = function() {
 ApplicationMain.create = function(config) {
 	var app = new openfl_display_Application();
 	ManifestResources.init(config);
-	app.meta.h["build"] = "1";
+	app.meta.h["build"] = "3";
 	app.meta.h["company"] = "HaxeFlixel";
 	app.meta.h["file"] = "MPPong";
 	app.meta.h["name"] = "MPPong";
@@ -68933,7 +68933,7 @@ var lime_utils_AssetCache = function() {
 	this.audio = new haxe_ds_StringMap();
 	this.font = new haxe_ds_StringMap();
 	this.image = new haxe_ds_StringMap();
-	this.version = 568511;
+	this.version = 346364;
 };
 $hxClasses["lime.utils.AssetCache"] = lime_utils_AssetCache;
 lime_utils_AssetCache.__name__ = "lime.utils.AssetCache";
@@ -116374,6 +116374,20 @@ states_InputState.prototype = $extend(flixel_FlxState.prototype,{
 	}
 	,update: function(elapsed) {
 		flixel_FlxState.prototype.update.call(this,elapsed);
+		var tmp;
+		var _this = flixel_FlxG.keys.pressed;
+		if(_this.keyManager.checkStatusUnsafe(17,_this.status)) {
+			var _this = flixel_FlxG.keys.justPressed;
+			tmp = _this.keyManager.checkStatusUnsafe(86,_this.status);
+		} else {
+			tmp = false;
+		}
+		if(tmp) {
+			if(lime_system_Clipboard.get_text() != null) {
+				this.inputText.set_text(lime_system_Clipboard.get_text());
+			}
+			return;
+		}
 		var _this = flixel_FlxG.keys.justPressed;
 		if(_this.keyManager.checkStatusUnsafe(8,_this.status)) {
 			this.inputText.set_text(this.inputText.text.substring(0,this.inputText.text.length - 1));
@@ -116407,7 +116421,12 @@ states_InputState.prototype = $extend(flixel_FlxState.prototype,{
 		if(Object.prototype.hasOwnProperty.call(this.numbers.h,num)) {
 			return this.numbers.h[num];
 		} else {
-			return char;
+			var _this = flixel_FlxG.keys.pressed;
+			if(_this.keyManager.checkStatusUnsafe(16,_this.status)) {
+				return char.toUpperCase();
+			} else {
+				return char.toLowerCase();
+			}
 		}
 	}
 	,numbers: null
@@ -116541,8 +116560,17 @@ states_PlayState.prototype = $extend(flixel_FlxState.prototype,{
 				}
 			});
 		};
-		this.client.events.on("opponentJoined",function(data) {
-			haxe_Log.trace("got movement update",{ fileName : "source/states/PlayState.hx", lineNumber : 122, className : "states.PlayState", methodName : "create"});
+		this.client.events.on("clientDisconnect",function(data) {
+			if(!statusText.alive) {
+				statusText.revive();
+			}
+			statusText.set_text("A client in this room disconnected.\nReturning to menu...");
+			new flixel_util_FlxTimer().start(3,function(tmr) {
+				var nextState = new states_InputState();
+				if(flixel_FlxG.game._state.switchTo(nextState)) {
+					flixel_FlxG.game._requestedState = nextState;
+				}
+			});
 		});
 		this.client.events.on("movementUpdate",function(data) {
 			var positions = data.positions;
@@ -116554,7 +116582,6 @@ states_PlayState.prototype = $extend(flixel_FlxState.prototype,{
 					continue;
 				}
 				_gthis.opponentPaddle.set_y(positionData.y);
-				_gthis.opponentPaddle.velocity.set_y(positionData.vy);
 			}
 		});
 		this.client.events.on("left",function(data) {
@@ -116612,8 +116639,8 @@ states_PlayState.prototype = $extend(flixel_FlxState.prototype,{
 		flixel_FlxG.overlap(this.balls,this.grpPaddles,$bind(this,this.paddleCollide),flixel_FlxObject.separate);
 		if(this.client.isReady) {
 			this.client.update();
-			if(this.tick++ % 4 == 0) {
-				this.client.send("movementUpdate",{ y : this.myPaddle.y, vy : this.myPaddle.velocity.y});
+			if(this.tick++ % 1 == 0) {
+				this.client.send("movementUpdate",{ y : this.myPaddle.y});
 			}
 		}
 	}
@@ -116623,7 +116650,7 @@ states_PlayState.prototype = $extend(flixel_FlxState.prototype,{
 			if(Math.abs(ball.x - this.myPaddle.x) <= 50) {
 				this.client.send("score",this.client.id);
 			}
-			ball.kill();
+			this.balls.remove(ball,true).destroy();
 		}
 	}
 	,paddleCollide: function(ball,paddle) {
@@ -116639,6 +116666,8 @@ states_PlayState.prototype = $extend(flixel_FlxState.prototype,{
 			id += characters.charAt(flixel_FlxG.random.int(0,characters.length - 1));
 		}
 		return id;
+	}
+	,onFocusLost: function() {
 	}
 	,__class__: states_PlayState
 	,__properties__: $extend(flixel_FlxState.prototype.__properties__,{set_opponentScore:"set_opponentScore",set_myScore:"set_myScore"})
